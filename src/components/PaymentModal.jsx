@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
+import { computeSplit } from "../lib/splitBilling";
+import { sendRecapLinks } from "../lib/notify";
+import { trackEvent } from "../lib/track";
 
 function generateOrderNumber() {
   return "DL-" + Math.floor(10000 + Math.random() * 90000);
 }
 
-export default function PaymentModal({ cart, onClose, onSuccess }) {
+export default function PaymentModal({ cart, guests = [], assignments = {}, onClose, onSuccess }) {
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const tax = subtotal * 0.1;
   const total = subtotal + tax;
@@ -13,11 +16,39 @@ export default function PaymentModal({ cart, onClose, onSuccess }) {
   const [orderNumber] = useState(generateOrderNumber);
   const [orderTime] = useState(() => new Date());
   const [form, setForm] = useState({ name: "", number: "", expiry: "", cvv: "" });
+  const [recapStatus, setRecapStatus] = useState(null);
+
+  const { perGuest } = computeSplit({ cart, guests, assignments });
+  const hasSplit = guests.length > 0;
 
   useEffect(() => {
     if (step !== "processing") return;
     const timer = setTimeout(() => setStep("success"), 2000);
     return () => clearTimeout(timer);
+  }, [step]);
+
+  useEffect(() => {
+    if (step === "summary" && hasSplit) {
+      trackEvent("group_order_split_viewed", { guestCount: guests.length });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step]);
+
+  useEffect(() => {
+    if (step !== "success") return;
+    trackEvent("group_order_checkout_completed", { guestCount: guests.length, total });
+    if (!hasSplit) return;
+    let cancelled = false;
+    sendRecapLinks(orderNumber, guests).then((results) => {
+      if (!cancelled) {
+        setRecapStatus(results);
+        for (const r of results) {
+          if (r.sent) trackEvent("group_order_recap_link_sent", { channel: r.channel });
+        }
+      }
+    });
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);
 
   function handleOverlayClick() {
@@ -78,6 +109,7 @@ export default function PaymentModal({ cart, onClose, onSuccess }) {
                 <span>Total</span><span>€{total.toFixed(2)}</span>
               </div>
             </div>
+            {hasSplit && <SplitTable perGuest={perGuest} />}
             <div className="modal-actions">
               <button className="modal-btn-secondary" onClick={onClose}>Cancel</button>
               <button className="modal-btn-primary" onClick={() => setStep("card")}>
@@ -179,6 +211,8 @@ export default function PaymentModal({ cart, onClose, onSuccess }) {
                 <span>Total paid</span><span>€{total.toFixed(2)}</span>
               </div>
             </div>
+            {hasSplit && <SplitTable perGuest={perGuest} />}
+            {hasSplit && <RecapStatus guests={guests} recapStatus={recapStatus} />}
             <button className="modal-btn-primary modal-btn-full" onClick={onSuccess}>
               Start New Order
             </button>
@@ -187,5 +221,47 @@ export default function PaymentModal({ cart, onClose, onSuccess }) {
 
       </div>
     </div>
+  );
+}
+
+function SplitTable({ perGuest }) {
+  return (
+    <div className="split-table">
+      <h3 className="split-table-title">Répartition par personne</h3>
+      {perGuest.map((g) => (
+        <div className="split-row" key={g.guestId}>
+          <span className="split-row-name">{g.name}</span>
+          <span className="split-row-detail">
+            €{g.itemsSubtotal.toFixed(2)} + €{g.tax.toFixed(2)} taxe
+            {g.discount > 0 ? ` − €${g.discount.toFixed(2)} remise` : ""}
+          </span>
+          <span className="split-row-total">€{g.total.toFixed(2)}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function RecapStatus({ guests, recapStatus }) {
+  if (!recapStatus) {
+    return <p className="recap-status recap-status-pending">Envoi des récaps en cours…</p>;
+  }
+  const byGuestId = Object.fromEntries(recapStatus.map((r) => [r.guestId, r]));
+  return (
+    <ul className="recap-status">
+      {guests.map((guest) => {
+        const result = byGuestId[guest.id];
+        return (
+          <li key={guest.id} className="recap-status-row">
+            <span>{guest.name}</span>
+            <span>
+              {result?.sent
+                ? `récap envoyé par ${result.channel === "sms" ? "SMS" : "email"} ✓`
+                : "pas de contact renseigné"}
+            </span>
+          </li>
+        );
+      })}
+    </ul>
   );
 }

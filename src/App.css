@@ -316,6 +316,181 @@ body {
   color: #e03030;
 }
 
+/* ─── Guest manager ───────────────────────────────────── */
+.guest-manager {
+  border-bottom: 1px solid #ede9e4;
+  padding-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.guest-manager-title {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #1a271f;
+}
+
+.guest-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.guest-input {
+  padding: 9px 12px;
+  border: 1.5px solid #d8d4cf;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  color: #1a271f;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.guest-input:focus {
+  border-color: #00c1b2;
+}
+
+.guest-add-btn {
+  padding: 8px;
+  background: #1a271f;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.guest-error {
+  font-size: 0.75rem;
+  color: #e03030;
+}
+
+.guest-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.guest-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+}
+
+.guest-name {
+  font-weight: 700;
+  color: #1a271f;
+}
+
+.guest-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #a8783f;
+  background: #fbeedc;
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+/* ─── Item assignment chips ───────────────────────────── */
+.cart-item-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.assign-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-left: 32px;
+}
+
+.assign-chip {
+  padding: 3px 10px;
+  border: 1.5px solid #d8d4cf;
+  border-radius: 999px;
+  background: white;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #6b7c71;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.assign-chip--active {
+  background: #00c1b2;
+  border-color: #00c1b2;
+  color: white;
+}
+
+/* ─── Split table (per-guest breakdown) ───────────────── */
+.split-table {
+  border-top: 1px solid #ede9e4;
+  padding-top: 14px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.split-table-title {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #1a271f;
+  margin-bottom: 4px;
+}
+
+.split-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.8rem;
+}
+
+.split-row-name {
+  font-weight: 700;
+  color: #1a271f;
+  flex-shrink: 0;
+}
+
+.split-row-detail {
+  flex: 1;
+  color: #9aaba0;
+  font-size: 0.72rem;
+}
+
+.split-row-total {
+  font-weight: 800;
+  color: #1a271f;
+  flex-shrink: 0;
+}
+
+.recap-status {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 20px;
+  font-size: 0.75rem;
+  color: #6b7c71;
+}
+
+.recap-status-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.recap-status-pending {
+  font-size: 0.75rem;
+  color: #9aaba0;
+  margin-bottom: 20px;
+}
+
 /* ─── Cart totals ─────────────────────────────────────── */
 .cart-totals {
   border-top: 1px solid #ede9e4;
